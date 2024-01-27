@@ -1,12 +1,42 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Fia med mera!</title>
-        <script src="https://unpkg.com/konva@9/konva.min.js"></script>
-        <script src="main.js"></script>
         <link href="index.css" rel="stylesheet" />
+        <script src="index.js"></script>
+
     </head>
+    <header> 
+        <img src="Bilder/fiamedmeralogo.png" alt="Italian Trulli">
+    </header>
     <body>
-        <div id="konva-container"></div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <!-- <li><a href="about.asp">About</a></li>
+            <li><a href="contact.asp">Contact</a></li> -->
+          </ul>
+        <main>
+            <h1> Play Fia med mera!</h1>
+
+            <div class= "gameOptions">
+                <h2> Choose amount of players</h2>
+
+                <div class="nrOfPlayerSelection">
+                    <button onclick="addUsernameInputs(1)" id="onePlayerButton">1</button>
+                    <button onclick="addUsernameInputs(2)"id="twoPlayerButton">2</button>
+                    <button onclick="addUsernameInputs(3)"id="threePlayerButton">3</button>
+                    <button onclick="addUsernameInputs(4)"id="fourPlayerButton">4</button>
+                </div>
+
+                <div class="playerNameSelection" id="playerNameSelection">
+                </div>
+                <!-- <button onclick="window.location.href='/game.html?pcount=2'">Play!</button> -->
+                
+                
+                <button id="play-button" onclick="playGame()" disabled>Play!</button>
+
+            </div>
+
+
+        </main>
     </body>
 </html>

@@ -1,11 +1,78 @@
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-html, body, #konva-container {
+img {
+    max-width: 200px;
+    max-height: 200px;
+}
+
+header {
+    width: 100%;
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+  }
+  
+  li {
+    float: center;
+  }
+  
+  li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  /* Change the link color to #111 (black) on hover */
+  li a:hover {
+    background-color: #111;
+  }
+
+  main {
+    margin-left: 10%;
+    margin-right: 10%;
+    width: 80%;
+    background-color: aliceblue;
+    height: 100vh;
+  }
+
+  main h1 {
+    text-align: center;
+    padding-top: 30px;
+  }
+
+  .gameOptions {
     width: 100%;
     height: 100%;
-    vertical-align: bottom;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+  }
+
+.playerNameSelection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.playerName {
+    display: flex;
+    flex-direction: column;
+}
+
+button {
+    font-size: larger;
+    padding: 1rem;
+    border-radius: 1rem;
 }

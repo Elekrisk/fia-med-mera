@@ -3,247 +3,44 @@ let stage;
 const sceneWidth = 1000;
 const sceneHeight = 1000;
 
+let colors = ["red", "green", "yellow", "blue"];
 
-// Function that gets the x and y position representing the grid numbers we want
-function pos(gridX, gridY) {
-    let segmentLength = sceneWidth / 11;
-    let x = gridX * segmentLength + segmentLength / 2;
-    let y = gridY * segmentLength + segmentLength / 2;
+function newGamestate(layer, players) {
 
-    return {x: x, y: y};
-}
-
-// { color: 'red', index: 10 }
-// Get the global coordinate from a color-local coordinate.
-// The outer rim is numbered 0-39, starting from red's starting cell.
-// Each color's inner cells are number 100-104, 200-204 etc, in
-// clockwise color order, starting with red.
-// Middle is 400.
-function colorLocalToGlobal(coord) {
-    let color = coord.color;
-    let index = coord.index;
-
-    function colorToOffset(color) {
-        switch (color) {
-            case 'red':
-                return 0
-            case 'green':
-                return 10;
-            case 'yellow':
-                return 20;
-            case 'blue':
-                return 30;
-            default:
-                return 0;
-        }
-    }
-
-    let offset = colorToOffset(color);
-
-    // When the player is inside one of the outer rim cells
-    if (index >= 0 && index < 40) {
-        let global = (index + offset) % 40;
-        return global;
-    }
-
-    // When the player is inside its goal strectch cls
-    if (index >= 40 && index < 44) {
-        return (offset + 10) * 10 + index - 40;
-    }
-    
-    // When the player is inside the "goal" cell
-    if (index == 44) {
-        return 500;
-    }
-
-    if (index < 0) {
-        return -offset + index;
-    }
-}
-
-function globalToGrid(coord) {
-    
-    // Grid coordinates for the current map
-    let outerRim = [
-        [0, 4],
-        [1, 4],
-        [2, 4],
-        [3, 4],
-        [4, 4],
-        [4, 3],
-        [4, 2],
-        [4, 1],
-        [4, 0],
-        [5, 0],
-        [6, 0],
-        [6, 1],
-        [6, 2],
-        [6, 3],
-        [6, 4],
-        [7, 4],
-        [8, 4],
-        [9, 4],
-        [10, 4],
-        [10, 5],
-        [10, 6],
-        [9, 6],
-        [8, 6],
-        [7, 6],
-        [6, 6],
-        [6, 7],
-        [6, 8],
-        [6, 9],
-        [6, 10],
-        [5, 10],
-        [4, 10],
-        [4, 9],
-        [4, 8],
-        [4, 7],
-        [4, 6],
-        [3, 6],
-        [2, 6],
-        [1, 6],
-        [0, 6],
-        [0, 5],
-    ];
-
-    // Goal stretches
-    let innerRed = [
-        [1, 5],
-        [2, 5],
-        [3, 5],
-        [4, 5],
-    ];
-
-    let innerGreen = [
-        [5, 1],
-        [5, 2],
-        [5, 3],
-        [5, 4],
-    ];
-
-    let innerYellow = [
-        [9, 5],
-        [8, 5],
-        [7, 5],
-        [6, 5],
-    ];
-
-    let innerBlue = [
-        [5, 9],
-        [5, 8],
-        [5, 7],
-        [5, 6],
-    ];
-
-    // Homes
-    let homeRed = [
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1],
-    ];
-
-    let homeGreen = [
-        [9, 0],
-        [9, 1],
-        [10, 0],
-        [10, 1],
-    ];
-
-    let homeYellow = [
-        [9, 9],
-        [9, 10],
-        [10, 9],
-        [10, 10],
-    ];
-
-    let homeBlue = [
-        [0, 9],
-        [0, 10],
-        [1, 9],
-        [1, 10],
-    ];
-
-
-    switch (true) {
-        case (coord < -30):
-            return homeBlue[-coord - 31];
-        case (coord < -20):
-            return homeYellow[-coord - 21];
-       case (coord < -10):
-            return homeGreen[-coord - 11];
-        case (coord < 0):
-            return homeRed[-coord - 1];
-        case (coord < 40):
-            return outerRim[coord];
-        case (coord < 200):
-            return innerRed[coord - 100];
-        case (coord < 300):
-            return innerGreen[coord - 200];
-        case (coord < 400):
-            return innerYellow[coord - 300];
-        case (coord < 500):
-            return innerBlue[coord - 400];
-        case (coord == 500):
-            return [5, 5];
-    }
-}
-
-function updatePieceSpritePosition(piece) {
-    let globalPos = colorLocalToGlobal(piece.pos);
-    let gridPos = globalToGrid(globalPos);
-    let {x: x, y: y} = pos(...gridPos);
-    piece.sprite.x(x);
-    piece.sprite.y(y);
-}
-
-function newGamestate(layer) {
-    function newPiece(color, index) {
-        let piece = {
-            color: color,
-            pos: { color: color, index: index },
-            sprite: new Konva.Rect({
-                x: 0,
-                y: 0,
-                fill: color,
-                stroke: 'black',
-                strokeWidth: 2,
-                width: 20,
-                height: 20,
-                offsetX: 10,
-                offsetY: 10,
-            }),
-        };
-
-        updatePieceSpritePosition(piece);
-
-        return piece;
+    for (let player of players) {
+        player.active = true;
     }
 
     let gamestate = {
-        pieces: []
+        currentTurn: 0,
+        currentPlayer: players[0],
+        turnState: 'start',
+        players: players,
+        pieces: [],
+        ranking: [],
+        over: false,
+        layer: layer,
     };
 
-    ["red", "green", "yellow", "blue"].forEach(color => {
+    for (let player of players) {
         for (let i = -1; i >= -4; --i) {
             // Create piece
-            let piece = newPiece(color, i);
+            let piece = newPiece(player, i);
             // Add piece to gamestate
             gamestate.pieces.push(piece);
             // Add piece to drawing layer
             layer.add(piece.sprite);
         }
-    });
+    };
 
     return gamestate;
 }
 
 // When we resize the document we need to change sizes
 function onResizeDocument() {
-    let body = document.getElementsByTagName("body")[0];
+    let container = document.getElementById("container-container");
 
-    let containerWidth = body.offsetWidth;
+    let containerWidth = container.offsetWidth;
 
     let scale = containerWidth / sceneWidth;
     stage.width(sceneWidth * scale);
@@ -254,7 +51,22 @@ function onResizeDocument() {
 let gamestate;
 
 window.onload = () => {
-   
+    let params = new URLSearchParams(window.location.search);
+
+    let names = params.getAll("username");
+    console.log(names);
+
+    let players = [];
+
+    for (let i = 0; i < names.length; ++i) {
+        players.push({
+            name: names[i],
+            color: colors[i],
+            turnSkip: 0
+        })
+    }
+
+
     // We create a new konva stage
     stage = new Konva.Stage({
         container: 'konva-container',
@@ -264,111 +76,263 @@ window.onload = () => {
 
     onResizeDocument();
     
+    let pieceLayer = new Konva.Layer();
+    gamestate = newGamestate(pieceLayer, players);
+    
     // We create our GameBoard and add it to our stage
     let board = createBoard();
     stage.add(board);
-    
-    let pieceLayer = new Konva.Layer();
     stage.add(pieceLayer);
-    gamestate = newGamestate(pieceLayer);
+
+    console.log(players);
+
+
+    selectNormalGameMode(players.length);
+
+    for (let piece of gamestate.pieces) {
+        updatePieceSpritePosition(piece);
+    }
 
     board.draw();
     pieceLayer.draw();
+    updateTurnIndicator();
 };
 
 window.onresize = () => {
     onResizeDocument();
 };
 
+function rollDice() {
+    return Math.floor(Math.random() * 6) + 1;
+}
 
-// Function to
-function createBoard() {
+// When the roll button is clicked
+function onClickRollDiceButton() {
+    let result = rollDice();
+    document.getElementById("dice-number").textContent = result;
+    document.getElementById("dice-number").className = "";
+
+    console.log(result);
+
+    gamestate.turnState = 'selectToMove';
+    gamestate.lastRoll = result;
+
+    
+    // Roll-button is disabled after we have rolled
+    document.getElementById("roll-button").disabled = true;
+
+    let canMovePiece = false;
+
+    // We iterate through the pieces and check which pieces are of the color of the current turn
+    for (let piece of gamestate.pieces) {
+        if (piece.player != gamestate.currentPlayer) {
+            continue;
+        }
+
+        // We check whether the pieces are in "spawn"/"home"
+        if (piece.pos.index < 0) {
+            // If we roll a 6 we can move pieces that are currently in spawn
+            if (result == 1) {
+                setPieceMovable(piece, 0);
+                canMovePiece = true;
+            }
+            if (result == 6) {
+                setPieceMovable(piece, 3);
+                canMovePiece = true;
+            }
+            continue;
+        }
+        
+        // If the piece is not in spawn we can always move it,
+        // as long as it is not in the center
+        if (piece.pos.index != 44) {
+            let target = Math.min(piece.pos.index + result, 44);
+            setPieceMovable(piece, target);
+            canMovePiece = true;
+        }
+    }
+
+    if (!canMovePiece) {
+        info(gamestate.currentPlayer.name + " cannot move");
+        endTurn();
+    }
+}
+
+function endMove() {
+    removePieceClickListeners();
+
+    document.getElementById("mera-button").disabled = false;
+    document.getElementById("end-button").disabled = false;
+}
+
+function onClickMeraButton() {
+    document.getElementById("mera-button").disabled = true;
+    document.getElementById("end-button").disabled = true;
+    doRandomMera(() => {
+        endTurn();
+    });
+}
+
+function onClickEndButton() {
+    document.getElementById("mera-button").disabled = true;
+    document.getElementById("end-button").disabled = true;
+    endTurn();
+}
+
+function endTurn() {
+    removePieceClickListeners();
+
+    for (let piece of gamestate.pieces) {
+        if (piece.player != gamestate.currentPlayer) {
+            continue;
+        }
+
+        if (piece.shield > 0) {
+            piece.shield -= 1;
+            if (piece.shield == 0) {
+                let shield = piece.extraSprites.get("shield");
+                shield.destroy();
+                piece.extraSprites.delete("shield");
+            }
+        }
+    }
+
+    onEndRound();
+
+    document.getElementById("dice-number").className = "gray";
+
+    if (gamestate.over) {
+        showGameOverScreen();
+        return;
+    }
+    nextTurn();
+}
+
+function nextTurn() {
+    let t = gamestate.currentTurn;
+    while (true) {
+        t += 1;
+        if (t >= gamestate.players.length) {
+            t = 0;
+        }
+
+        let prospectivePlayer = gamestate.players[t];
+
+        if (prospectivePlayer.turnSkip > 0) {
+            prospectivePlayer.turnSkip -= 1;
+            info(prospectivePlayer.name + ": turn skipped");
+            continue;
+        }
+
+        if (prospectivePlayer.active) {
+            break;
+        }
+    }
+    gamestate.currentTurn = t;
+    gamestate.currentPlayer = gamestate.players[t];
+    
+    gamestate.turnState = "start";
+    document.getElementById("roll-button").disabled = false;
+    updateTurnIndicator();
+}
+
+function updateTurnIndicator() {
+    let turnIndicator = document.getElementById("roll-button");
+    turnIndicator.className = gamestate.currentPlayer.color;
+}
+
+function showGameOverScreen() {
     let layer = new Konva.Layer();
 
-    // Draw homes
+    let box = new Konva.Rect({
+        x: 500,
+        y: 500,
+        width: 500,
+        height: 300,
+        fill: 'white',
+        stroke: 'black',
+    });
 
-    function drawCircle(x, y, color) {
-        layer.add(new Konva.Circle({
-            ...pos(x, y),
-            radius: sceneWidth / 22 - 5,
-            fill: color,
-            stroke: 'black',
-            strokeWidth: 4,
-        }));
+    let text = "Game Over\n";
+
+    let index = 0;
+
+    for (let player of gamestate.ranking) {
+        console.log(player);
+        text += "\n" + ++index + ". " + player.name
     }
 
-    // Function that draws a home for the wanted color and part of the board
-    function drawHome(x, y, color) {
-        drawCircle(x, y, color);
-        drawCircle(x + 1, y, color);
-        drawCircle(x, y + 1, color);
-        drawCircle(x + 1, y + 1, color);
-    }
+    text = new Konva.Text({
+        x: 500,
+        y: 500,
+        text: text,
+        fontSize: 30,
+        fontFamily: 'Calibri',
+        fill: "black",
+    });
 
-    // We draw homes for the 4 different players in each respective corner
-    drawHome(0, 0, 'red');
-    drawHome(9, 0, 'green');
-    drawHome(0, 9, 'blue');
-    drawHome(9, 9, 'yellow');
 
-    
-    // Starting squares
-    drawCircle(0, 4, 'red');
-    drawCircle(6, 0, 'green');
-    drawCircle(10, 6, 'yellow');
-    drawCircle(4, 10, 'blue');
+    let box1 = new Konva.Rect({
+        x: 250,
+        y: 675,
+        width: 225,
+        height: 75,
+        fill: "white",
+        stroke: "black"
+    });
 
-    // Outer paths
-    
-    // Horizontals (skip middle 1)
-    for (let i = 0; i < 10; ++i) {
-        if (i != 4) {
-            drawCircle(i + 1, 4, 'white');
-        }
-        if (i != 5) {
-            drawCircle(i, 6, 'white');
-        }
-    }
+    box1.on("click", () => {
+        window.location.reload();
+    })
 
-    // Verticals (skip middle 3)
-    for (let i = 0; i < 10; ++i) {
-        if (i < 4 || i > 6) {
-            drawCircle(4, i, 'white');
-        }
-        if (i < 3 || i > 5) {
-            drawCircle(6, i + 1, 'white');
-        }
-    }
+    let text1 = new Konva.Text({
+        x: 250 + 225/2,
+        y: 675 + 75/2,
+        text: "Restart",
+        fontSize: 30,
+        fontFamily: 'Calibri',
+        fill: "black",
+        listening: false,
+    });
 
-    // Capstones
-    drawCircle(0, 5, 'white')
-    drawCircle(10, 5, 'white')
-    drawCircle(5, 0, 'white')
-    drawCircle(5, 10, 'white')
+    text1.offsetX(text1.width() / 2);
+    text1.offsetY(text1.height() / 2);
 
-    // Red goal
-    for (let i = 1; i < 5 ; ++i) {
-        drawCircle(i, 5, "red")
-        
-    }
+    let box2 = new Konva.Rect({
+        x: 525,
+        y: 675,
+        width: 225,
+        height: 75,
+        fill: "white",
+        stroke: "black"
+    });
 
-    // Yellow goal
-    for (let i = 6; i < 10 ; ++i) {
-        drawCircle(i, 5, "yellow")
-        
-    }
+    box2.on("click", () => {
+        window.location.href = "/";
+    })
 
-    // Green goal
-    for (let i = 1; i < 5; ++i) {
-        drawCircle(5, i, 'green');
-    }
+    let text2 = new Konva.Text({
+        x: 525 + 225/2,
+        y: 675 + 75/2,
+        text: "Back to Main",
+        fontSize: 30,
+        fontFamily: 'Calibri',
+        fill: "black",
+        listening: false,
+    });
 
-    // Blue goal
-    for (let i = 6; i < 10; ++i) {
-        drawCircle(5, i, 'blue');
-    }
+    text2.offsetX(text2.width() / 2);
+    text2.offsetY(text2.height() / 2);
 
-    drawCircle(5, 5, 'black');
-
-    return layer;
+    box.offsetX(box.width() / 2);
+    box.offsetY(box.height() / 2);
+    text.offsetX(text.width() / 2);
+    text.offsetY(text.height() / 2);
+    layer.add(box);
+    layer.add(text);
+    layer.add(box1);
+    layer.add(text1);
+    layer.add(box2);
+    layer.add(text2);
+    stage.add(layer);
 }

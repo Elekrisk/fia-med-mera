@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Fia med mera!</title>
+        <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+        <script src="mera.js"></script>
+        <script src="board.js"></script>
+        <script src="piece.js"></script>
+        <script src="mode.js"></script>
+        <script src="main.js"></script>
+        <link href="game.css" rel="stylesheet" />
+        <link rel="icon" type="image/x-icon" href="/Bilder/fiamedmeralogo.png">
+    </head>
+    <body>
+        <main>
+            <div id="container-container">
+                <div id="konva-container"></div>
+            </div>
+            <div id="button-list">
+                <button id="roll-button" onclick="onClickRollDiceButton()">Roll</button>
+                <div id="dice"><p id="dice-number">^.^</p></div>
+                <button id="mera-button" onclick="onClickMeraButton()" disabled>MERA!</button>
+                <button id="end-button" onclick="onClickEndButton()" disabled>End Turn</button>
+            </div>
+        </main>
+    </body>
+</html>
