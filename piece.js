@@ -61,7 +61,8 @@ function setPieceMovable(piece, targetPosition) {
             stroke: "black",
             strokeWidth: 2,
             lineCap: 'round',
-            lineJoin: 'round'
+            lineJoin: 'round',
+            listening: false
         });
 
         layer.add(line);
